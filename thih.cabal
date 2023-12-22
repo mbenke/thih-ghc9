@@ -21,7 +21,7 @@ homepage:      http://web.cecs.pdx.edu/~mpj/thih/
 
 
 build-type:    Simple
-Cabal-Version: >= 1.2
+Cabal-Version: >= 1.8
 data-files:    README
 tested-with:   GHC==6.8.2
 
@@ -41,8 +41,18 @@ Library
        build-depends: base, pretty
 
        ghc-options:      -Wall
-       ghc-prof-options: -prof -auto-all
+       ghc-prof-options: -auto-all
 
 executable             thih
        main-is:        Main.hs
+       other-modules: HaskellMaybe, SourcePrelude, Debug, StaticPrelude,
+                         TIMonad, SourceTest, StaticTest, StaticMonad,
+                         Unify, HaskellTest, HaskellList, StaticThih,
+                         PPrint, HaskellPrims, StaticList, Id,
+                         Testbed, HaskellPrelude, StaticMaybe, HaskellMonad,
+                         Assump, HaskellThih, Static, TIProg,
+                         SourceMaybe, Pred, Lit, Kind,
+                         TIMain, Subst, SourceList, SourceMonad,
+                         Type, Scheme, Infer, Pat, SourceThih
+       build-depends:  base, pretty
        hs-source-dirs: src

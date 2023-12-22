@@ -46,11 +46,16 @@ data Expr = Var   Id
 -- definitions of the following combinators to match, and do not need to
 -- rewrite all the test code.
 
+oldfoldr :: (a -> b -> b) -> b -> [a] -> b
+oldfoldr = foldr
+
 ap              = foldl1 Ap
 evar v          = (Var v)
 elit l          = (Lit l)
 econst c        = (Const c)
-elet e f        = foldr Let f (map toBg e)
+
+-- elet :: [(Id, Maybe Scheme, [Alt])] -> Expr -> Expr
+elet e f        = oldfoldr Let f (map toBg e) where
 
 toBg           :: [(Id, Maybe Scheme, [Alt])] -> BindGroup
 toBg g          = ([(v, t, alts) | (v, Just t, alts) <- g ],
@@ -77,7 +82,7 @@ elambda alt     = elet [[ ("_lambda",
                            Nothing,
                            [alt]) ]]
                              (evar "_lambda")
-eguarded        = foldr (\(c,t) e -> eif c t e) efail
+eguarded        = oldfoldr (\(c,t) e -> eif c t e) efail
 efail           = Const ("FAIL" :>: Forall [Star] ([] :=> TGen 0))
 esign e t       = elet [[ ("_val", Just t, [([],e)]) ]] (evar "_val")
 
@@ -142,7 +147,7 @@ tiAlts ce as alts t = do psts <- mapM (tiAlt ce as) alts
 
 -----------------------------------------------------------------------------
 
-split :: Monad m => ClassEnv -> [Tyvar] -> [Tyvar] -> [Pred]
+split :: (Monad m, MonadFail m) => ClassEnv -> [Tyvar] -> [Tyvar] -> [Pred]
                       -> m ([Pred], [Pred])
 split ce fs gs ps = do let ps' = reduce ce ps
                            (ds, rs) = partition (all (`elem` fs) . tv) ps'
@@ -171,7 +176,7 @@ candidates ce (v, qs) = [ t' | let is = [ i | IsIn i t <- qs ]
                                t' <- defaults ce,
                                all (entail ce []) [ IsIn i [t'] | i <- is ] ]
 
-withDefaults :: Monad m => ([Ambiguity] -> [Type] -> a)
+withDefaults :: (Monad m, MonadFail m) => ([Ambiguity] -> [Type] -> a)
                   -> ClassEnv -> [Tyvar] -> [Pred] -> m a
 withDefaults f ce vs ps
     | any null tss  = fail "cannot resolve ambiguity"
@@ -179,10 +184,10 @@ withDefaults f ce vs ps
       where vps = ambiguities ce vs ps
             tss = map (candidates ce) vps
 
-defaultedPreds :: Monad m => ClassEnv -> [Tyvar] -> [Pred] -> m [Pred]
+defaultedPreds :: (Monad m, MonadFail m) => ClassEnv -> [Tyvar] -> [Pred] -> m [Pred]
 defaultedPreds  = withDefaults (\vps ts -> concat (map snd vps))
 
-defaultSubst   :: Monad m => ClassEnv -> [Tyvar] -> [Pred] -> m Subst
+defaultSubst   :: (Monad m, MonadFail m) => ClassEnv -> [Tyvar] -> [Pred] -> m Subst
 defaultSubst    = withDefaults (\vps ts -> zip (map fst vps) ts)
 
 -----------------------------------------------------------------------------

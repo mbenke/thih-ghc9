@@ -13,7 +13,7 @@
 -----------------------------------------------------------------------------
 
 module PPrint(module PPrint, module Text.PrettyPrint.HughesPJ) where
-
+import Prelude hiding((<>))
 import Text.PrettyPrint.HughesPJ
 
 

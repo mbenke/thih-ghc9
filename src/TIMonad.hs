@@ -1,15 +1,15 @@
 -----------------------------------------------------------------------------
 -- TIMonad:	Type inference monad
--- 
+--
 -- Part of `Typing Haskell in Haskell', version of November 23, 2000
 -- Copyright (c) Mark P Jones and the Oregon Graduate Institute
 -- of Science and Technology, 1999-2000
--- 
+--
 -- This program is distributed as Free Software under the terms
 -- in the file "License" that is included in the distribution
 -- of this software, copies of which may be obtained from:
 --             http://www.cse.ogi.edu/~mpj/thih/
--- 
+--
 -----------------------------------------------------------------------------
 
 module TIMonad where
@@ -23,11 +23,22 @@ import Scheme
 
 newtype TI a = TI (Subst -> Int -> (Subst, Int, a))
 
+instance Functor TI where
+  fmap f (TI g) = TI (\s n -> case g s n of
+                                (s',m,x) -> (s', m, f x))
+
+instance Applicative TI where
+  pure x = TI (\s n -> (s,n,x))
+  mf <*> mx = do { f <- mf; x <- mx; pure (f x) }
+
 instance Monad TI where
-  return x   = TI (\s n -> (s,n,x))
+  -- return     = pure
   TI f >>= g = TI (\s n -> case f s n of
                             (s',m,x) -> let TI gx = g x
                                         in  gx s' m)
+
+instance MonadFail TI where
+  fail = error
 
 runTI       :: TI a -> a
 runTI (TI f) = x where (s,n,x) = f nullSubst 0

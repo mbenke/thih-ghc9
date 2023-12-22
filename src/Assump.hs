@@ -27,7 +27,7 @@ instance Types Assump where
   apply s (i :>: sc) = i :>: (apply s sc)
   tv (i :>: sc)      = tv sc
 
-find                 :: Monad m => Id -> [Assump] -> m Scheme
+find                 :: (Monad m, MonadFail m) => Id -> [Assump] -> m Scheme
 find i []             = fail ("unbound identifier: " ++ i)
 find i ((i':>:sc):as) = if i==i' then return sc else find i as
 

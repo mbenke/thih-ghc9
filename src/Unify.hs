@@ -21,9 +21,9 @@ import Type
 import Subst
 
 class Unify t where
-  mgu :: Monad m => t -> t -> m Subst
+  mgu :: (Monad m, MonadFail m) => t -> t -> m Subst
 
-varBind :: Monad m => Tyvar -> Type -> m Subst
+varBind :: (Monad m, MonadFail m) => Tyvar -> Type -> m Subst
 
 instance Unify Type where
   mgu (TAp l r) (TAp l' r') = do s1 <- mgu l l'
@@ -48,7 +48,7 @@ varBind u t | t == TVar u      = return nullSubst
             | otherwise        = return (u +-> t)
 
 class Match t where
-  match :: Monad m => t -> t -> m Subst
+  match :: (Monad m, MonadFail m) => t -> t -> m Subst
 
 instance Match Type where
   match (TAp l r) (TAp l' r') = do sl <- match l l'

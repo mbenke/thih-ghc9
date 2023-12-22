@@ -49,7 +49,7 @@ infixr 4 @@
 (@@)       :: Subst -> Subst -> Subst
 s1 @@ s2    = [ (u, apply s1 t) | (u,t) <- s2 ] ++ s1
 
-merge      :: Monad m => Subst -> Subst -> m Subst
+merge      :: (Monad m, MonadFail m) => Subst -> Subst -> m Subst
 merge s1 s2 = if agree then return (s1++s2) else fail "merge fails"
  where agree = all (\v -> apply s1 (TVar v) == apply s2 (TVar v))
                    (map fst s1 `intersect` map fst s2)
